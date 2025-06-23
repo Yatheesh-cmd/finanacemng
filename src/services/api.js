@@ -9,7 +9,7 @@ const commonApi = async (url, method, data = {}, isMultipart = false) => {
       ? { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
       : { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionStorage.getItem('token')}` },
     data,
-    timeout: 10000,
+    timeout: 100000000,
   };
   try {
     const response = await axios(config);

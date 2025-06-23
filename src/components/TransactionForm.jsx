@@ -54,7 +54,7 @@ function TransactionForm({ transaction = {}, isEdit = false }) {
         response = await addTransactionApi(formData);
         toast.success('Transaction added successfully', {
           style: {
-            background: '#4f46e5',
+            background: 'green',
             color: '#fff',
           },
           iconTheme: {

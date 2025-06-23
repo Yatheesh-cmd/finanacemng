@@ -35,13 +35,12 @@ function App() {
           }}
         />
         <Routes>
-            <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home />} /> {/* Add this line */}
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/transactions" element={<PrivateRoute><Transactions /></PrivateRoute>} />
           <Route path="/add-transaction" element={<PrivateRoute><AddTransaction /></PrivateRoute>} />
           <Route path="/add-transaction/:id" element={<PrivateRoute><AddTransaction /></PrivateRoute>} />
-       
         </Routes>
       </Router>
     </AuthProvider>
