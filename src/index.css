@@ -1,0 +1,80 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #f9fafb;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Button hover effect */
+.btn-hover-effect {
+  transition: all 0.3s ease;
+  transform: translateY(0);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-hover-effect:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Card hover effect with glassmorphism */
+.card-hover {
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card-hover:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+/* Larger input fields */
+input, select {
+  font-size: 1.125rem; /* text-lg */
+  padding: 0.75rem 1rem; /* p-3 */
+  height: 3rem; /* h-12 */
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .chart-container {
+    height: 250px !important;
+  }
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  input, select {
+    font-size: 1rem; /* text-base */
+    height: 2.75rem; /* slightly smaller on mobile */
+  }
+}
+
+/* Glassmorphism for modals */
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
