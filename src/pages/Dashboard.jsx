@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import ChartComponent from '../components/ChartComponent';
-import BudgetSettings from '../components/BudgetSettings';
+import { Doughnut, Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from 'chart.js';
 import { getTransactionsApi, getBudgetApi } from '../services/api';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
@@ -9,8 +9,13 @@ import {
   ArrowDownIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
 } from '@heroicons/react/24/outline';
 import { BudgetContext, BudgetProvider } from '../context/BudgetContext.jsx';
+
+// Register ChartJS components
+ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
 function DashboardContent() {
   const context = useContext(BudgetContext);
@@ -22,6 +27,7 @@ function DashboardContent() {
   const [transactions, setTransactions] = useState([]);
   const currentMonth = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
 
+  // Calculate financial metrics
   const totalIncome = transactions
     .filter((t) => t.type === 'income')
     .reduce((sum, t) => sum + t.amount, 0);
@@ -32,6 +38,123 @@ function DashboardContent() {
 
   const balance = totalIncome - totalExpense;
   const remainingBudget = (budget?.amount || 0) - totalExpense;
+
+  // Group expenses by category for the pie chart
+  const expenseByCategory = transactions
+    .filter((t) => t.type === 'expense')
+    .reduce((acc, transaction) => {
+      const category = transaction.category || 'Uncategorized';
+      if (!acc[category]) {
+        acc[category] = 0;
+      }
+      acc[category] += transaction.amount;
+      return acc;
+    }, {});
+
+  // Prepare data for expense pie chart
+  const expenseChartData = {
+    labels: Object.keys(expenseByCategory),
+    datasets: [
+      {
+        data: Object.values(expenseByCategory),
+        backgroundColor: [
+          '#3B82F6', // blue-500
+          '#10B981', // emerald-500
+          '#F59E0B', // amber-500
+          '#EF4444', // red-500
+          '#8B5CF6', // violet-500
+          '#EC4899', // pink-500
+          '#14B8A6', // teal-500
+          '#F97316', // orange-500
+        ],
+        borderWidth: 0,
+        hoverOffset: 10,
+      },
+    ],
+  };
+
+  // Prepare data for income vs expense pie chart
+  const incomeExpenseChartData = {
+    labels: ['Income', 'Expenses'],
+    datasets: [
+      {
+        data: [totalIncome, totalExpense],
+        backgroundColor: ['#10B981', '#EF4444'],
+        borderWidth: 0,
+        hoverOffset: 10,
+      },
+    ],
+  };
+
+  // Chart options
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: {
+          usePointStyle: true,
+          pointStyle: 'circle',
+          padding: 20,
+          font: {
+            family: 'Inter, sans-serif',
+            size: 12,
+          },
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            let label = context.label || '';
+            if (label) {
+              label += ': ';
+            }
+            label += '$' + context.raw.toFixed(2);
+            return label;
+          },
+        },
+        displayColors: true,
+        usePointStyle: true,
+        bodyFont: {
+          family: 'Inter, sans-serif',
+          size: 12,
+        },
+        titleFont: {
+          family: 'Inter, sans-serif',
+          size: 14,
+          weight: 'bold',
+        },
+        padding: 10,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      },
+      title: {
+        display: true,
+        text: 'Expense Distribution',
+        font: {
+          family: 'Inter, sans-serif',
+          size: 16,
+          weight: '600',
+        },
+        padding: {
+          top: 10,
+          bottom: 20,
+        },
+      },
+    },
+    cutout: '65%',
+  };
+
+  const incomeExpenseChartOptions = {
+    ...chartOptions,
+    plugins: {
+      ...chartOptions.plugins,
+      title: {
+        ...chartOptions.plugins.title,
+        text: 'Income vs Expenses',
+      },
+    },
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -95,7 +218,7 @@ function DashboardContent() {
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-medium text-green-800">Total Income</h3>
             <div className="p-2 bg-green-200 rounded-lg">
-              <ArrowUpIcon className="h-5 w-5 text-green-600" />
+              <ArrowTrendingUpIcon className="h-5 w-5 text-green-600" />
             </div>
           </div>
           <p className="text-2xl font-bold text-green-900">${totalIncome.toFixed(2)}</p>
@@ -110,7 +233,7 @@ function DashboardContent() {
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-medium text-red-800">Total Expense</h3>
             <div className="p-2 bg-red-200 rounded-lg">
-              <ArrowDownIcon className="h-5 w-5 text-red-600" />
+              <ArrowTrendingDownIcon className="h-5 w-5 text-red-600" />
             </div>
           </div>
           <p className="text-2xl font-bold text-red-900">${totalExpense.toFixed(2)}</p>
@@ -168,7 +291,7 @@ function DashboardContent() {
       </motion.div>
 
       {/* Bottom Panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -184,9 +307,55 @@ function DashboardContent() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm"
         >
-          <ChartComponent transactions={transactions} chartType="categoryAndIncomeVsExpense" />
+          <div className="h-64">
+            <Doughnut data={incomeExpenseChartData} options={incomeExpenseChartOptions} />
+          </div>
         </motion.div>
       </div>
+
+      {/* Expense Breakdown Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm"
+      >
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Expense Breakdown</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="h-80">
+            <Pie data={expenseChartData} options={chartOptions} />
+          </div>
+          <div className="flex flex-col justify-center">
+            <div className="space-y-4">
+              {Object.entries(expenseByCategory).map(([category, amount], index) => (
+                <div key={category} className="flex items-center">
+                  <div
+                    className="w-3 h-3 rounded-full mr-3"
+                    style={{ backgroundColor: expenseChartData.datasets[0].backgroundColor[index] }}
+                  ></div>
+                  <div className="flex-1">
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium text-gray-700">{category}</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        ${amount.toFixed(2)} ({(amount / totalExpense * 100).toFixed(1)}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2 mt-1">
+                      <div
+                        className="h-2 rounded-full"
+                        style={{
+                          width: `${(amount / totalExpense * 100)}%`,
+                          backgroundColor: expenseChartData.datasets[0].backgroundColor[index],
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

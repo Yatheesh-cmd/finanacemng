@@ -9,12 +9,14 @@ const commonApi = async (url, method, data = {}, isMultipart = false) => {
       ? { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
       : { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionStorage.getItem('token')}` },
     data,
-    timeout: 100000000,
+    timeout: 100000,
   };
   try {
+    console.log('API request:', { url: config.url, method, data, headers: config.headers });
     const response = await axios(config);
     return response;
   } catch (error) {
+    console.error('API error:', error);
     throw new Error(error.response?.data?.message || error.message);
   }
 };
@@ -24,6 +26,7 @@ export const loginApi = (data) => commonApi('/auth/login', 'POST', data);
 export const addTransactionApi = (data) => commonApi('/transactions/add', 'POST', data);
 export const getTransactionsApi = (filters = {}) => {
   const query = new URLSearchParams(filters).toString();
+  console.log('getTransactionsApi query:', query);
   return commonApi(`/transactions/all?${query}`, 'GET');
 };
 export const updateTransactionApi = (id, data) => commonApi(`/transactions/${id}`, 'PUT', data);
